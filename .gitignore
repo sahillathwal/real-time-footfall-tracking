@@ -1,0 +1,16 @@
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore virtual environment
+venv/
+.env
+
+# Ignore logs and database files
+logs/
+*.log
+*.db
+
+# Ignore Docker build cache
+*.tar

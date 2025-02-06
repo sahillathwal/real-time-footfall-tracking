@@ -1,0 +1,13 @@
+opencv-python
+torch
+torchvision
+torchaudio
+numpy
+pandas
+matplotlib
+fastapi
+uvicorn
+pymongo
+psycopg2
+dash
+flask
