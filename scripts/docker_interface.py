@@ -41,7 +41,7 @@ def show_logs():
 
 def exec_command(command):
     """Execute a command inside the running container."""
-    subprocess.run(f"docker exec -it rtft_app_1 {command}", shell=True)
+    subprocess.run(f"docker exec -it real-time-footfall-tracking_app_1 {command}", shell=True)
 
 def init_app():
     """Initialize the application by pulling Docker images."""
@@ -49,11 +49,11 @@ def init_app():
 
 def dev_mode(root=False, commit=False, vscode=False, terminator=False):
     """Enter development mode inside the container."""
-    cmd = "docker exec -it rtft_app_1 /bin/bash"
+    cmd = "docker exec -it real-time-footfall-tracking_app_1 /bin/bash"
     if root:
-        cmd = "docker exec -it -u 0 rtft_app_1 /bin/bash"
+        cmd = "docker exec -it -u 0 real-time-footfall-tracking_app_1 /bin/bash"
     if commit:
-        subprocess.run(f"docker commit rtft_app_1 {docker_image}", shell=True)
+        subprocess.run(f"docker commit real-time-footfall-tracking_app_1 {docker_image}", shell=True)
     if vscode:
         subprocess.run("code .", shell=True)
     if terminator:

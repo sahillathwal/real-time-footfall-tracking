@@ -2,24 +2,18 @@ import cv2
 
 RTSP_URL = "rtsp://USERNAME:PASSWORD@CAMERA_IP:PORT"
 
-def stream_camera():
-    cap = cv2.VideoCapture(RTSP_URL)
+def get_rtsp_stream(rtsp_url):
+    """Capture frames from an IP camera using RTSP."""
+    cap = cv2.VideoCapture(rtsp_url)
     if not cap.isOpened():
-        print("Error: Cannot open RTSP stream")
-        return
+        print("Error: Cannot open IP camera stream")
+        return None
+    return cap
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("Failed to receive frame. Retrying...")
-            break
-
-        cv2.imshow("RTSP Stream", frame)
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-if __name__ == "__main__":
-    stream_camera()
+def read_frame(cap):
+    """Read a frame from the RTSP stream."""
+    ret, frame = cap.read()
+    if not ret:
+        print("Error: Cannot read frame from IP camera")
+        return None
+    return frame
