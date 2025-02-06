@@ -23,5 +23,5 @@ def footfall_tracking(rtsp_url):
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    RTSP_URL = "rtsp://admin:Proglint2024@10.0.120.110:554"
+    RTSP_URL = "rtsp://admin:Proglint2024@10.0.120.109:554"
     footfall_tracking(RTSP_URL)

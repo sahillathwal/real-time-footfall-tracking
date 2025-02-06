@@ -15,8 +15,17 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application source code
-COPY . .
+RUN apt-get update && apt-get install -y \
+    libxcb-xinerama0 \
+    libxcb-xkb1 \
+    libxkbcommon0 \
+    libx11-xcb1 \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libopencv-dev \
+    x11-apps \
+    v4l-utils \
+    && rm -rf /var/lib/apt/lists/*
 
 # Expose API port
 EXPOSE 8000
