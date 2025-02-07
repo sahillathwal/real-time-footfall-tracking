@@ -4,7 +4,7 @@ import numpy as np
 
 def connect_db():
     """Establishes a connection to MongoDB."""
-    client = MongoClient("mongodb://localhost:27017/")
+    client = MongoClient("mongodb://mongodb:27017/")
     db = client["footfall_tracking"]
     return db
 
@@ -42,11 +42,13 @@ def get_matching_person(face_embedding, threshold=0.5):
     best_match = None
     
     for person in people:
-        stored_embedding = np.array(person["face_embedding"])
-        distance = np.linalg.norm(face_embedding - stored_embedding)
-        
-        if distance < min_distance and distance < threshold:
-            min_distance = distance
-            best_match = person["person_id"]
+        stored_embedding = person.get("face_embedding")
+        if stored_embedding is not None:
+            stored_embedding = np.array(stored_embedding)
+            if face_embedding is not None:
+                distance = np.linalg.norm(face_embedding - stored_embedding)
+                if distance < min_distance and distance < threshold:
+                    min_distance = distance
+                    best_match = person["person_id"]
     
     return best_match
