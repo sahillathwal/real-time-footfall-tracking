@@ -1,14 +1,30 @@
-opencv-python
-torch
-torchvision
-torchaudio
+# YOLOv8 for Object Detection (CUDA-Optimized)
+ultralytics
+
+# DeepSORT for Person Tracking
+deep_sort_realtime
+
+# Face Embedding Extraction (TensorFlow GPU Support)
+deepface[tensorflow]
+
+# OpenCV with CUDA Support
+opencv-contrib-python-headless
+
+# Machine Learning & Numerical Computing
 numpy
 pandas
 matplotlib
+
+# Web API & Dashboard
 fastapi
 uvicorn
-pymongo
-psycopg2
 dash
 flask
-ultralytics
+
+# Database Clients
+pymongo
+psycopg2
+
+# NVIDIA CUDA Libraries (Needed for GPU Acceleration)
+nvidia-pyindex
+nvidia-tensorrt  # Only needed if using TensorRT
