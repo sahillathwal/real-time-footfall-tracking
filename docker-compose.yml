@@ -35,12 +35,18 @@ services:
 
   dashboard:
     image: sahillathwal/rtft:latest
-    command: [ "python", "dashboard/app.py" ]
+    command: [ "python3", "dashboard/app.py" ]
     ports:
       - "8050:8050"
     depends_on:
       - app
     restart: always
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
 
 volumes:
   mongodb_data:
