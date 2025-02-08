@@ -2,19 +2,19 @@ version: '3.8'
 
 services:
   app:
-    image: sahillathwal/rtft:latest
-    container_name: rtft_app
+    image: sahillathwal/rtftc12:latest
+    container_name: rtftc12_app
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix  # X11 socket for GUI access
-      - /etc/localtime:/etc/localtime:ro  # Sync container timezone with host
-      - .:/app  # Mount the project directory for development
-      - /var/run/docker.sock:/var/run/docker.sock  # Enable access to Docker inside the container
-      - /dev/input:/dev/input  # Access input devices (if needed)
+      - /tmp/.X11-unix:/tmp/.X11-unix # X11 socket for GUI access
+      - /etc/localtime:/etc/localtime:ro # Sync container timezone with host
+      - .:/app # Mount the project directory for development
+      - /var/run/docker.sock:/var/run/docker.sock # Enable access to Docker inside the container
+      - /dev/input:/dev/input # Access input devices (if needed)
     ports:
       - "8000:8000"
     depends_on:
@@ -26,7 +26,7 @@ services:
           devices:
             - driver: nvidia
               count: all
-              capabilities: [gpu]
+              capabilities: [ gpu ]
 
   database:
     image: mongo:latest
@@ -41,16 +41,16 @@ services:
       - mongodb_data:/data/db
 
   dashboard:
-    image: sahillathwal/rtft:latest
-    container_name: rtft_dashboard
-    command: ["python3", "dashboard/app.py"]
+    image: sahillathwal/rtftc12:latest
+    container_name: rtftc12_dashboard
+    command: [ "python3", "dashboard/app.py" ]
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix  # Enable GUI access
+      - /tmp/.X11-unix:/tmp/.X11-unix # Enable GUI access
     ports:
       - "8050:8050"
     depends_on:
@@ -62,7 +62,7 @@ services:
           devices:
             - driver: nvidia
               count: all
-              capabilities: [gpu]
+              capabilities: [ gpu ]
 
 volumes:
   mongodb_data:

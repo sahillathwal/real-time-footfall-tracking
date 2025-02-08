@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  DOCKER_IMAGE: sahillathwal/rtft
+  DOCKER_IMAGE: sahillathwal/rtftc12
   TAG: latest
 
 jobs:
