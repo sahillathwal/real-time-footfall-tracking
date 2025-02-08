@@ -1,7 +1,7 @@
 # ===========================
 # Stage 1: Dependency Installer (Builder) with GPU Access
 # ===========================
-FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 AS builder
+FROM nvidia/cuda:12.2.2-cudnn8-runtime-ubuntu22.04 AS builder
 
 # Enable GPU during build
 ENV NVIDIA_VISIBLE_DEVICES=all
@@ -18,44 +18,39 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # Install essential system dependencies for building packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 python3-pip python3-venv python3-dev \
-    git wget gcc g++ \
-    libglib2.0-0 libopencv-dev libpq-dev \
+    git wget gcc g++ curl \
+    libglib2.0-0 libopencv-core libpq-dev \
     libgl1-mesa-glx libxrender1 libxext6 libsm6 \
+    && apt-mark manual python3 python3-pip python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
-# Install cuDNN 8.9.6 via NVIDIA repository
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libcudnn8=8.9.6.*-1+cuda12.2 \
-    libcudnn8-dev=8.9.6.*-1+cuda12.2 \
-    && rm -rf /var/lib/apt/lists/*
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org | python3 -
 
-# Create a virtual environment to store dependencies
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Ensure Poetry is in PATH
+ENV PATH="/root/.local/bin:$PATH"
 
 # Set working directory
 WORKDIR /app
 
+# Copy only dependency files first for better caching
+COPY pyproject.toml poetry.lock /app/
 
-# Copy only requirements file to leverage Docker caching
-COPY requirements.txt .
+# Install dependencies using Poetry
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-root --no-interaction --no-ansi
 
-# Install PyTorch with CUDA 12.2 manually to avoid auto-upgrade to CUDA 12.8
-# RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu122
+# Install PyTorch (CUDA 12.1 - Closest match to 12.2)
+RUN poetry run pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
-# Install TensorRT for CUDA 12.2
-RUN pip install --no-cache-dir nvidia-pyindex && pip install --no-cache-dir tensorrt==8.6.*
-
-# Upgrade pip and install dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
-
-
+# Install TensorRT
+RUN poetry run pip install nvidia-pyindex && \
+    poetry run pip install --no-cache-dir tensorrt
 
 # ===========================
 # Stage 2: Final Runtime Image
 # ===========================
-FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 AS runtime
+FROM nvidia/cuda:12.2.2-cudnn8-runtime-ubuntu22.04 AS runtime
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -65,31 +60,32 @@ ENV CUDA_HOME=/usr/local/cuda-12.2
 ENV PATH=$CUDA_HOME/bin:$PATH
 ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 
-# Install minimal system dependencies (no dev tools)
+# Install minimal system dependencies
 RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
-    python3 python3-venv python3-pip \
+    python3 python3-pip \
     libglib2.0-0 libpq-dev libgl1-mesa-glx libxrender1 libxext6 libsm6 \
-    libcudnn8=8.9.6.*-1+cuda12.2 \
-    libcudnn8-dev=8.9.6.*-1+cuda12.2 \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Ensure CUDA 12.2 Libraries are correctly linked
-RUN ln -sf /lib/x86_64-linux-gnu/libcudnn.so.8 /usr/local/cuda-12.2/lib64/libcudnn.so.8 && \
-    ln -sf /lib/x86_64-linux-gnu/libcudnn.so /usr/local/cuda-12.2/lib64/libcudnn.so && \
-    ldconfig
+# Copy the installed dependencies from the builder stage
+COPY --from=builder /root/.local /root/.local
+COPY --from=builder /usr/local /usr/local
 
-# Copy the pre-installed virtual environment from the builder stage
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Ensure Poetry is still available in the runtime container
+ENV PATH="/root/.local/bin:$PATH"
 
 # Set working directory
 WORKDIR /app
 
-# Copy application source code (only necessary files)
+# Copy application source code
 COPY . .
+
+# Create a non-root user for better security
+RUN groupadd --gid 1000 appuser && \
+    useradd --uid 1000 --gid appuser --shell /bin/bash --create-home appuser
+USER appuser
 
 # Expose API port
 EXPOSE 8000
 
 # Run the application
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
