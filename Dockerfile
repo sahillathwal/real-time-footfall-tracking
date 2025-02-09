@@ -36,6 +36,8 @@ COPY pyproject.toml poetry.lock /app/
 RUN poetry config virtualenvs.create false && \
     poetry install --no-root --no-interaction --no-ansi
 
+RUN pip install --no-cache-dir ultralytics torchreid torchvision
+
 # ===========================
 # Stage 2: Final Runtime Image
 # ===========================
@@ -79,4 +81,5 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Run the application directly
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["tail", "-f", "/dev/null"]

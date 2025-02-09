@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   app:
-    image: sahillathwal/rtftc12:latest
-    container_name: rtftc12_app
+    image: sahillathwal/rtftv2:latest
+    container_name: rtftv2_app
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
@@ -40,29 +40,29 @@ services:
     volumes:
       - mongodb_data:/data/db
 
-  dashboard:
-    image: sahillathwal/rtftc12:latest
-    container_name: rtftc12_dashboard
-    command: ["python3", "dashboard/app.py"]
-    environment:
-      - DISPLAY=${DISPLAY}
-      - QT_X11_NO_MITSHM=1
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=all
-    volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix  # Enable GUI access
-    ports:
-      - "8050:8050"
-    depends_on:
-      - app
-    restart: always
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+  # dashboard:
+  #   image: sahillathwal/rtftv2:latest
+  #   container_name: rtftv2_dashboard
+  #   command: ["python3", "dashboard/app.py"]
+  #   environment:
+  #     - DISPLAY=${DISPLAY}
+  #     - QT_X11_NO_MITSHM=1
+  #     - NVIDIA_VISIBLE_DEVICES=all
+  #     - NVIDIA_DRIVER_CAPABILITIES=all
+  #   volumes:
+  #     - /tmp/.X11-unix:/tmp/.X11-unix  # Enable GUI access
+  #   ports:
+  #     - "8050:8050"
+  #   depends_on:
+  #     - app
+  #   restart: always
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
 
 volumes:
   mongodb_data:
