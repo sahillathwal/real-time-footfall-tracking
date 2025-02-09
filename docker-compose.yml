@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   app:
-    image: sahillathwal/rtft:latest
-    container_name: rtft_app
+    image: sahillathwal/rtftc12:latest
+    container_name: rtftc12_app
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
@@ -41,8 +41,8 @@ services:
       - mongodb_data:/data/db
 
   dashboard:
-    image: sahillathwal/rtft:latest
-    container_name: rtft_dashboard
+    image: sahillathwal/rtftc12:latest
+    container_name: rtftc12_dashboard
     command: ["python3", "dashboard/app.py"]
     environment:
       - DISPLAY=${DISPLAY}
