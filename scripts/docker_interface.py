@@ -2,7 +2,7 @@ import argparse
 import subprocess
 import os
 
-docker_image = "sahillathwal/rtftv2:latest"
+docker_image = "sahillathwal/rtft:latest"
 
 def run_container():
     """Run the pre-built container."""
@@ -14,10 +14,10 @@ def stop_container():
 
 def build_image(force=False, clean=False):
     """Build the Docker image locally."""
-    cmd = "docker build --build-arg NVIDIA_VISIBLE_DEVICES=all --build-arg NVIDIA_DRIVER_CAPABILITIES=compute,utility -t sahillathwal/rtftv2:latest ."
+    cmd = "docker build --build-arg NVIDIA_VISIBLE_DEVICES=all --build-arg NVIDIA_DRIVER_CAPABILITIES=compute,utility -t sahillathwal/rtft:latest ."
     if force:
-        # cmd = "docker build --no-cache -t sahillathwal/rtftv2:latest ."
-        cmd = "docker build --no-cache --build-arg NVIDIA_VISIBLE_DEVICES=all --build-arg NVIDIA_DRIVER_CAPABILITIES=compute,utility -t sahillathwal/rtftv2:latest ."
+        # cmd = "docker build --no-cache -t sahillathwal/rtft:latest ."
+        cmd = "docker build --no-cache --build-arg NVIDIA_VISIBLE_DEVICES=all --build-arg NVIDIA_DRIVER_CAPABILITIES=compute,utility -t sahillathwal/rtft:latest ."
 
     if clean:
         subprocess.run("docker system prune -a -f", shell=True)
@@ -43,7 +43,7 @@ def show_logs():
 
 def exec_command(command):
     """Execute a command inside the running container."""
-    subprocess.run(f"docker exec -it rtftv2_app {command}", shell=True)
+    subprocess.run(f"docker exec -it rtft_app {command}", shell=True)
 
 def init_app():
     """Initialize the application by pulling Docker images."""
@@ -51,11 +51,11 @@ def init_app():
 
 def dev_mode(root=False, commit=False, vscode=False, terminator=False):
     """Enter development mode inside the container."""
-    cmd = "docker exec -it rtftv2_app /bin/bash"
+    cmd = "docker exec -it rtft_app /bin/bash"
     if root:
-        cmd = "docker exec -it -u 0 rtftv2_app /bin/bash"
+        cmd = "docker exec -it -u 0 rtft_app /bin/bash"
     if commit:
-        subprocess.run(f"docker commit rtftv2_app {docker_image}", shell=True)
+        subprocess.run(f"docker commit rtft_app {docker_image}", shell=True)
     if vscode:
         subprocess.run("code .", shell=True)
     if terminator:

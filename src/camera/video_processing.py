@@ -9,7 +9,7 @@ def adjust_fps(cap, target_fps=30):
     return max(1, delay - int(actual_fps))
 
 if __name__ == "__main__":
-    cap = cv2.VideoCapture("rtsp://your_camera_ip:554/live")
+    cap = cv2.VideoCapture("rtsp://admin:Proglint2024@10.0.120.109:554/live")
     while True:
         ret, frame = cap.read()
         if not ret:

@@ -1,3 +1,4 @@
+import torch
 import torchreid
 
 class BodyEmbedding:
