@@ -1,5 +1,7 @@
 import torch
 
+# Allocate a dummy tensor to force memory allocation
+dummy_tensor = torch.randn(1024, 1024, device="cuda")
 print("✅ PyTorch Version:", torch.__version__)
 print("✅ CUDA Available:", torch.cuda.is_available())
 if torch.cuda.is_available():

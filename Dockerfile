@@ -1,7 +1,7 @@
 # ===========================
 # Stage 1: Dependency Installer (Builder) with GPU Access
 # ===========================
-FROM pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime AS builder
+FROM pytorch/pytorch:2.5.1-cuda12.1-cudnn9-devel AS builder
 
 # Enable GPU
 ENV NVIDIA_VISIBLE_DEVICES=all
@@ -14,7 +14,7 @@ ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1
 
-# Install system dependencies & clean cache in one step
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev git wget gcc g++ make build-essential curl libglib2.0-0 libpq-dev \
     libgl1-mesa-glx libxrender1 libxext6 libsm6 && \
@@ -62,7 +62,31 @@ RUN pip install --no-cache-dir \
     pip install --no-cache-dir torch-tensorrt==2.5.0 -f https://github.com/NVIDIA/Torch-TensorRT/releases
 
 RUN pip install --no-cache-dir \
-    "nvidia-modelopt[all]" --extra-index-url https://pypi.nvidia.com
+    "nvidia-modelopt[all]" --extra-index-url https://pypi.nvidia.com && \
+    pip install faiss-gpu-cu12
+
+# ===========================
+# Install TensorRT from NVIDIA
+# ===========================
+# Download TensorRT tarball
+RUN wget -q --show-progress --progress=bar:force:noscroll -O /tmp/TensorRT.tar.gz \
+    https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.3.0/tars/TensorRT-10.3.0.26.Linux.x86_64-gnu.cuda-12.5.tar.gz
+
+# Extract TensorRT
+RUN mkdir -p /opt/tensorrt && \
+    tar -xzf /tmp/TensorRT.tar.gz -C /opt/tensorrt --strip-components=1 && \
+    rm /tmp/TensorRT.tar.gz
+
+# Move libraries to standard locations
+RUN cp -P /opt/tensorrt/targets/x86_64-linux-gnu/lib/libnvinfer* /usr/lib/x86_64-linux-gnu/ && \
+    ldconfig
+
+# Move trtexec binary to /usr/bin
+RUN cp /opt/tensorrt/targets/x86_64-linux-gnu/bin/trtexec /usr/bin/ && \
+    chmod +x /usr/bin/trtexec
+
+# Clean up to save space
+RUN rm -rf /opt/tensorrt/samples /opt/tensorrt/data /opt/tensorrt/python /opt/tensorrt/docs
 
 # ===========================
 # Stage 2: Final Runtime Image
@@ -85,7 +109,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy installed dependencies from builder
 COPY --from=builder /opt/conda/lib/python3.11/site-packages /opt/conda/lib/python3.11/site-packages
 COPY --from=builder /usr/local /usr/local
-COPY --from=builder /root/.local /root/.local
+COPY --from=builder /usr/lib/x86_64-linux-gnu/ /usr/lib/x86_64-linux-gnu/
+COPY --from=builder /usr/bin/trtexec /usr/bin/trtexec
 
 # Set working directory
 WORKDIR /app
@@ -97,5 +122,4 @@ COPY . .
 EXPOSE 8000
 
 # Run the application directly
-# CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
 CMD ["tail", "-f", "/dev/null"]
