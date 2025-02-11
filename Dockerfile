@@ -78,7 +78,7 @@ RUN mkdir -p /opt/tensorrt && \
     rm /tmp/TensorRT.tar.gz
 
 # Move libraries to standard locations
-RUN cp -P /opt/tensorrt/targets/x86_64-linux-gnu/lib/libnvinfer* /usr/lib/x86_64-linux-gnu/ && \
+RUN cp -Pr /opt/tensorrt/targets/x86_64-linux-gnu/lib/* /usr/lib/x86_64-linux-gnu/ && \
     ldconfig
 
 # Move trtexec binary to /usr/bin
